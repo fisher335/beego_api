@@ -10,6 +10,7 @@ func init() {
 	ns := beego.NewNamespace("/user",
 		beego.NSRouter("/login", &controllers.UserController{}, "post:Login"),
 		beego.NSRouter("/add", &controllers.UserController{}, "post:Post"),
+		beego.NSRouter("/del", &controllers.UserController{}, "post:Delete"),
 	)
 	beego.AddNamespace(ns)
 

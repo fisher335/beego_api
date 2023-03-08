@@ -56,7 +56,7 @@ func (u *UserController) Put() {
 }
 
 func (u *UserController) Delete() {
-	uid := u.GetString(":uid")
+	uid := u.Ctx.Input
 	models.DeleteUser(uid)
 	u.Data["json"] = "delete success!"
 	u.ServeJSON()
