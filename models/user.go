@@ -1,7 +1,6 @@
 package models
 
 import (
-	"beego_api/common"
 	"errors"
 	"github.com/beego/beego/v2/client/orm"
 	_ "github.com/mattn/go-sqlite3"
@@ -68,7 +67,9 @@ func Login(username, password string) bool {
 	var user User
 	o := orm.NewOrm()
 	err := o.Raw("SELECT * FROM user WHERE username = ?", username).QueryRow(&user)
-	common.CheckErr(err)
+	if err != nil {
+		panic(err)
+	}
 	if user.Password == password {
 		return true
 	}

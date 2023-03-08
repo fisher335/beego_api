@@ -4,6 +4,7 @@ import (
 	"beego_api/common"
 	"beego_api/models"
 	"encoding/json"
+	"fmt"
 
 	beego "github.com/beego/beego/v2/server/web"
 )
@@ -39,13 +40,6 @@ func (u *UserController) GetAll() {
 	u.ServeJSON()
 }
 
-// Get
-// @Title Get
-// @Description get user by uid
-// @Param	uid		path 	string	true		"The key for staticblock"
-// @Success 200 {object} models.User
-// @Failure 403 :uid is empty
-// @router /:uid [get]
 func (u *UserController) Get() {
 	uid := u.GetString(":uid")
 	if uid != "" {
@@ -85,14 +79,16 @@ func (u *UserController) Login() {
 	username := u.GetString("username")
 	password := u.GetString("password")
 	if models.Login(username, password) {
-		l := common.LoginResponse{
+		l := models.LoginResponse{
 			Token:   "123123123",
-			Menus:   u.GetMeue(),
+			Menus:   u.GetMenu(),
 			Routers: "/home_/users_/user/info_/test",
 		}
 
 		re := common.OK(l)
-		u.Data["json"] = re
+		result, _ := json.Marshal(re)
+		fmt.Print(string(result))
+		u.Data["json"] = &re
 	} else {
 		u.Data["json"] = "user not exist"
 	}
@@ -108,8 +104,13 @@ func (u *UserController) Logout() {
 	u.ServeJSON()
 }
 
-func (u *UserController) GetMeue() string {
+func (u *UserController) GetMenu() []models.Memu {
 
-	return `[{"icon":"el-icon-setting","index":"/home","title":"首页","subs":""},{"icon":"el-icon-edit","index":"2","title":"用户管理","subs":[{"icon":"el-icon-edit","index":"/users","title":"用户列表","subs":""}]},{"icon":"el-icon-setting","index":"/scaner","title":"主机扫描"},{"icon":"el-icon-zoom-in","index":"/industrial","title":"漏洞检查"},{"icon":"el-icon-setting","index":"/shell","title":"webShell"},{"icon":"el-icon-share","index":"/vis","title":"拓扑结构"},{"icon":"el-icon-delete","index":"/luyou","title":"设备管理"},{"icon":"el-icon-bell","index":"/test","title":"测试管理"}]`
-
+	var str = []byte(`[{"icon":"el-icon-setting","index":"/home","title":"首页"},{"icon":"el-icon-edit","index":"2","title":"用户管理","subs":[{"icon":"el-icon-edit","index":"/users","title":"用户列表"}]},{"icon":"el-icon-setting","index":"/scaner","title":"主机扫描"},{"icon":"el-icon-zoom-in","index":"/industrial","title":"漏洞检查"},{"icon":"el-icon-setting","index":"/shell","title":"webShell"},{"icon":"el-icon-share","index":"/vis","title":"拓扑结构"},{"icon":"el-icon-delete","index":"/luyou","title":"设备管理"},{"icon":"el-icon-bell","index":"/test","title":"测试管理"}]`)
+	var menus []models.Memu
+	err := json.Unmarshal(str, &menus)
+	if err != nil {
+		panic(err)
+	}
+	return menus
 }
