@@ -6,3 +6,9 @@ type Memu struct {
 	Title string  `json:"title,omitempty"`
 	Subs  []*Memu `json:"subs,omitempty"`
 }
+
+type LoginResponse struct {
+	Token   string `json:"token,omitempty"`
+	Menus   []Memu `json:"menus,omitempty"`
+	Routers string `json:"routers,omitempty"`
+}
