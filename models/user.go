@@ -1,11 +1,12 @@
 package models
 
 import (
-	"beego_api/common"
 	"errors"
 	"github.com/beego/beego/v2/client/orm"
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/go-sql-driver/mysql"
 	"strconv"
+	"strings"
+	"time"
 )
 
 var (
@@ -14,16 +15,31 @@ var (
 
 func init() {
 	// 需要在init中注册定义的model
-	orm.RegisterDriver("sqlite", orm.DRSqlite)
-	orm.RegisterDataBase("default", "sqlite3", "data.db")
+	//orm.RegisterDriver("sqlite", orm.DRSqlite)
+	//orm.RegisterDataBase("default", "sqlite3", "data.db")
+	orm.RegisterDriver("mysql", orm.DRMySQL)
+	orm.RegisterDataBase("default", "mysql", "root:wish@tcp(172.16.120.198:3306)/cect?charset=utf8&loc=Local")
+
 	orm.RegisterModel(new(User))
+	orm.Debug = true
 	orm.RunSyncdb("default", false, true)
 }
 
+type BaseModel struct {
+	CreatedAt time.Time `orm:"auto_now_add;type(datetime);null"`
+	UpdatedAt time.Time `orm:"auto_now;type(datetime);null"`
+}
+
 type User struct {
-	Id       int    `orm:"id"`
-	Username string `orm:"username"`
-	Password string `orm:"password"`
+	Id       int64  `orm:"auto;pk"  json:"id,omitempty"`
+	Username string `orm:"unique;size(255)" json:"login_name,omitempty" `
+	Name     string `orm:"size(255);null" json:"name,omitempty"`
+	Type     string `orm:"size(255);default(普通)" json:"type,omitempty"`
+	Email    string `orm:"size(255);null" json:"email,omitempty"`
+	Phone    string `orm:"size(255);null" json:"phone,omitempty"`
+	Password string `orm:"size(255)" json:"password,omitempty"`
+	Test     int    `orm:"default(1)"`
+	BaseModel
 }
 
 type Profile struct {
@@ -46,8 +62,19 @@ func GetUser(uid string) (u *User, err error) {
 	return nil, errors.New("User not exists")
 }
 
-func GetAllUsers() map[string]*User {
-	return UserList
+func GetAllUsers(page Pagination) ([]User, int) {
+	o := orm.NewOrm()
+	qs := o.QueryTable(&User{}).Filter("username__icontains", strings.TrimSpace(page.Paras["name"]))
+	total, _ := qs.Count()
+	var users []User
+	_, err := qs.Limit(page.PageSize, (page.CurrentPage-1)*page.PageSize).All(&users)
+	if err != nil {
+		return nil, 0
+	}
+	if err != nil {
+		panic(errors.New("数据库查询错误"))
+	}
+	return users, int(total)
 }
 
 func UpdateUser(uid string, uu *User) (a *User, err error) {
@@ -64,17 +91,15 @@ func UpdateUser(uid string, uu *User) (a *User, err error) {
 	return nil, errors.New("User Not Exist")
 }
 
-func Login(username, password string) bool {
-	var user User
-	o := orm.NewOrm()
-	err := o.Raw("SELECT * FROM user WHERE username = ?", username).QueryRow(&user)
-	common.CheckErr(err)
-	if user.Password == password {
-		return true
-	}
-	return false
-}
-
 func DeleteUser(uid string) {
 	delete(UserList, uid)
+}
+func GetUserByLoginName(name string) (User, error) {
+	user := User{Username: name}
+	o := orm.NewOrm()
+	err := o.Read(&user, "username")
+	if err != nil {
+		panic(err)
+	}
+	return user, nil
 }

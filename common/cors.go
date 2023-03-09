@@ -1,8 +1,11 @@
 package common
 
 import (
+	"beego_api/services"
 	beego "github.com/beego/beego/v2/server/web"
+	"github.com/beego/beego/v2/server/web/context"
 	"github.com/beego/beego/v2/server/web/filter/cors"
+	"strings"
 )
 
 func init() {
@@ -18,4 +21,17 @@ func init() {
 		// 如果设置，则允许共享身份验证凭据，例如cookie
 		AllowCredentials: true,
 	}))
+
+	beego.InsertFilter("/*", beego.BeforeRouter, func(context *context.Context) {
+		if (context.Request.RequestURI != "/Login") && (1 == 2) {
+			//此处可以校验一下ip，设备等
+			cookie, err := context.Request.Cookie("token")
+			timeout, username := services.CheckToken(cookie.Value)
+			if strings.Index(context.Request.RequestURI, "/Login") >= 0 || strings.Index(context.Request.RequestURI, "/static") >= 0 {
+
+			} else if err != nil || timeout || username == "" {
+				context.WriteString("你无权访问")
+			}
+		}
+	})
 }
