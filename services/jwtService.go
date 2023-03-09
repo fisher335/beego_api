@@ -34,7 +34,7 @@ func CheckToken(tokenString string) (bool, string) {
 	claims, _ := token.Claims.(jwt.MapClaims)
 	Phone = claims["phone"].(string)
 	exp := claims["exp"]
-	if exp.(int64) < time.Now().Unix() {
+	if exp.(float64) < float64(time.Now().Unix()) {
 		return false, Phone
 	}
 	return true, Phone

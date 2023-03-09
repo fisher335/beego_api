@@ -18,7 +18,7 @@ type UserController struct {
 func (u *UserController) Post() {
 	var user models.User
 	json.Unmarshal(u.Ctx.Input.RequestBody, &user)
-	data := []byte(user.Password)
+	data := []byte(user.Username)
 	has := md5.Sum(data)
 	user.Password = fmt.Sprintf("%x", has)
 	uid := models.AddUser(user)
@@ -84,8 +84,10 @@ func (u *UserController) Login() {
 		}
 
 		re := common.OK(l)
-		result, _ := json.Marshal(re)
-		fmt.Print(string(result))
+		_, err := json.Marshal(re)
+		if err != nil {
+			panic(err)
+		}
 		u.Data["json"] = &re
 	} else {
 		u.Data["json"] = "user not exist"

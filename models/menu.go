@@ -12,3 +12,9 @@ type LoginResponse struct {
 	Menus   []Memu `json:"menus,omitempty"`
 	Routers string `json:"routers,omitempty"`
 }
+
+type Pagination struct {
+	CurrentPage int               `json:"Page,omitempty"`
+	PageSize    int               `json:"pageSize,omitempty"`
+	Paras       map[string]string `json:"paras"`
+}

@@ -7,19 +7,20 @@ import (
 	"fmt"
 )
 
-func AuthenticateUserForLogin(loginName, password string) (*models.User, error) {
+func AuthenticateUserForLogin(loginName, password string) (models.User, error) {
+	user := models.User{}
 	if len(password) == 0 || len(loginName) == 0 {
-		return nil, errors.New("Error:用户或者密码为空")
+		return user, errors.New("Error:用户或者密码为空")
 	}
 	data := []byte(password)
 	has := md5.Sum(data)
 	password = fmt.Sprintf("%x", has)
 	v, err := models.GetUserByLoginName(loginName) //数据库查询语句。自己写的
 	if err != nil {
-		return nil, errors.New("Error:未找到该用户")
+		return user, errors.New("Error:未找到该用户")
 
 	} else if v.Password != password {
-		return nil, errors.New("Error:密码错误")
+		return user, errors.New("Error:密码错误")
 
 	} else {
 		return v, nil

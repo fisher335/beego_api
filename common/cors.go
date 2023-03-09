@@ -2,6 +2,7 @@ package common
 
 import (
 	"beego_api/services"
+	"fmt"
 	beego "github.com/beego/beego/v2/server/web"
 	"github.com/beego/beego/v2/server/web/context"
 	"github.com/beego/beego/v2/server/web/filter/cors"
@@ -23,14 +24,15 @@ func init() {
 	}))
 
 	beego.InsertFilter("/*", beego.BeforeRouter, func(context *context.Context) {
-		if (context.Request.RequestURI != "/Login") && (1 == 2) {
-			//此处可以校验一下ip，设备等
-			cookie, err := context.Request.Cookie("token")
-			timeout, username := services.CheckToken(cookie.Value)
-			if strings.Index(context.Request.RequestURI, "/Login") >= 0 || strings.Index(context.Request.RequestURI, "/static") >= 0 {
-
-			} else if err != nil || timeout || username == "" {
-				context.WriteString("你无权访问")
+		//此处可以校验一下ip，设备等
+		if strings.Index(context.Request.RequestURI, "/user/login") >= 0 || strings.Index(context.Request.RequestURI, "/static") >= 0 || context.Request.RequestURI == "/" {
+			fmt.Println()
+		} else {
+			cookie := context.Request.Header["Authorization"]
+			timeout, username := services.CheckToken(cookie[0])
+			fmt.Println(timeout, username)
+			if username == "" {
+				context.WriteString("无授权访问")
 			}
 		}
 	})
