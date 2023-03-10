@@ -13,18 +13,6 @@ var (
 	UserList map[string]*User
 )
 
-func init() {
-	// 需要在init中注册定义的model
-	//orm.RegisterDriver("sqlite", orm.DRSqlite)
-	//orm.RegisterDataBase("default", "sqlite3", "data.db")
-	orm.RegisterDriver("mysql", orm.DRMySQL)
-	orm.RegisterDataBase("default", "mysql", "root:wish@tcp(172.16.120.198:3306)/cect?charset=utf8&loc=Local")
-
-	orm.RegisterModel(new(User))
-	orm.Debug = true
-	orm.RunSyncdb("default", false, true)
-}
-
 type BaseModel struct {
 	CreatedAt time.Time `orm:"auto_now_add;type(datetime);null"`
 	UpdatedAt time.Time `orm:"auto_now;type(datetime);null"`
@@ -62,11 +50,11 @@ func GetUser(uid string) (u *User, err error) {
 	return nil, errors.New("User not exists")
 }
 
-func GetAllUsers(page Pagination) ([]User, int) {
+func GetAllUsers(page Pagination) ([]*User, int) {
 	o := orm.NewOrm()
 	qs := o.QueryTable(&User{}).Filter("username__icontains", strings.TrimSpace(page.Paras["name"]))
 	total, _ := qs.Count()
-	var users []User
+	var users []*User
 	_, err := qs.Limit(page.PageSize, (page.CurrentPage-1)*page.PageSize).All(&users)
 	if err != nil {
 		return nil, 0
