@@ -6,6 +6,7 @@ require (
 	github.com/beego/beego/v2 v2.0.7
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-sql-driver/mysql v1.7.0
+	github.com/gorilla/websocket v1.5.0
 )
 
 require (
